@@ -2,7 +2,9 @@ function App() {
 
     return (
         <>
-            123
+            <h1 className="underline">
+                123
+            </h1>
         </>
     )
 }
