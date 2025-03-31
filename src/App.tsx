@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import ArticleSearchView from './views/ArticleSearchView.tsx'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 const queryClient = new QueryClient()
@@ -6,7 +7,7 @@ const queryClient = new QueryClient()
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <h1 className="underline">123</h1>
+      <ArticleSearchView />
 
       <ReactQueryDevtools initialIsOpen={true} />
     </QueryClientProvider>
