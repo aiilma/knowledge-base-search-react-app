@@ -1,6 +1,6 @@
 import api from './api.ts'
-import type { CategoriesParams, CategoriesResponse } from '../types/categories.ts'
 import type { ApiResponse } from '../types/api.ts'
+import type { CategoriesParams, CategoriesResponse } from '../types/categories.ts'
 
 // Запрос для получения списка категорий
 export const getCategories = async (params: CategoriesParams) => {

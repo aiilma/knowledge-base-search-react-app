@@ -1,8 +1,9 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { BrowserRouter as Router } from 'react-router'
-import ArticleSearchView from './views/ArticleSearchView.tsx'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { BrowserRouter as Router } from 'react-router'
+
 import './i18n'
+import ArticleSearchView from './views/ArticleSearchView.tsx'
 
 const queryClient = new QueryClient()
 

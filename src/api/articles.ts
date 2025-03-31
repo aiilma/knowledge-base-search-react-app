@@ -1,6 +1,6 @@
 import api from './api.ts'
-import type { SearchArticlesParams, SearchArticlesResponse } from '../types/articles.ts'
 import type { ApiResponse } from '../types/api.ts'
+import type { SearchArticlesParams, SearchArticlesResponse } from '../types/articles.ts'
 
 // Полнотекстовый поиск статьи по параметрам
 export const searchArticles = async (params: SearchArticlesParams) => {

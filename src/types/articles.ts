@@ -1,6 +1,6 @@
 import type { Id, Nullable } from './basic.ts'
-import type {Locale} from "./instance.ts";
 import type {Category} from "./categories.ts";
+import type {Locale} from "./instance.ts";
 
 export enum ArticleStatus {
   DRAFT = 'DRAFT',

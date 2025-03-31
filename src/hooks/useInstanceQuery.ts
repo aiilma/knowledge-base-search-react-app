@@ -1,5 +1,6 @@
-import { getInstance } from '../api/instance.ts'
 import { useQuery } from '@tanstack/react-query'
+
+import { getInstance } from '../api/instance.ts'
 
 export const useInstanceQuery = (enabled: boolean = true) => {
   return useQuery({
