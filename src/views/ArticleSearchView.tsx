@@ -1,12 +1,13 @@
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Select, { SingleValue } from 'react-select'
-import { Article, SearchArticlesParams } from '../types/articles'
+import { Article } from '../types/articles'
 import { useInstanceQuery } from '../hooks/useInstanceQuery'
 import { Locale } from '../types/instance'
 import { useCategoriesQuery } from '../hooks/useCategoriesQuery.ts'
 import { useArticlesSearchQuery } from '../hooks/useArticlesSearchQuery.ts'
 import { Id, Nullable } from '../types/basic.ts'
 import ReactMarkdown from 'react-markdown'
+import { useSearchParams } from 'react-router'
 
 const localeLabels: { [key in Locale]: string } = {
   [Locale.RU]: 'Русский',
@@ -26,70 +27,103 @@ const renderers = {
 }
 
 const ArticleSearchView = () => {
-  const [searchParams, setSearchParams] = useState<SearchArticlesParams>({
-    search: '',
-    locale: undefined,
-    category: []
-  })
-  const [selectedLocale, setSelectedLocale] =
-    useState<SingleValue<{ value: string; label: string }>>(null)
+  const [searchParamsURL, setSearchParamsURL] = useSearchParams()
+
+  // local state
+  const [selectedLocale, setSelectedLocale] = useState<
+    SingleValue<{ value: Locale; label: string }>
+  >(
+    searchParamsURL.get('locale')
+      ? {
+          value: searchParamsURL.get('locale') as Locale,
+          label: getLocaleLabel(searchParamsURL.get('locale') as Locale)
+        }
+      : null
+  )
+  const [selectedCategories, setSelectedCategories] = useState<{ value: number; label: string }[]>(
+    []
+  )
+  const [searchInput, setSearchInput] = useState(searchParamsURL.get('search') || '')
   const [isLocaleQueryEnabled, setIsLocaleQueryEnabled] = useState(true)
-  const prevLocaleRef = useRef<Locale | undefined>(undefined)
   const [openArticleId, setOpenArticleId] = useState<Nullable<Article['id']>>(null)
 
+  // queries
   const { data: instanceData, isLoading: instanceDataLoading } =
     useInstanceQuery(isLocaleQueryEnabled)
-  const { data: categoriesData, isLoading: categoriesDataLoading } = useCategoriesQuery(
-    {},
-    searchParams.locale !== prevLocaleRef.current
-  )
-  const { data, isLoading, error } = useArticlesSearchQuery(searchParams)
+  const { data: categoriesData, isLoading: categoriesDataLoading } = useCategoriesQuery({}, true)
+  const { data, isLoading, error } = useArticlesSearchQuery({
+    search: searchInput,
+    locale: selectedLocale?.value,
+    category: selectedCategories.map((category) => category.value)
+  })
 
+  // инициализация локали из query-параметров
   useEffect(() => {
     if (instanceData) {
-      const defaultLocale = instanceData.default_locale as Locale
-      setSearchParams((prevParams) => ({
-        ...prevParams,
-        locale: defaultLocale
-      }))
-      setSelectedLocale({
-        value: defaultLocale,
-        label: getLocaleLabel(defaultLocale)
-      })
+      const queryLocale = searchParamsURL.get('locale') as Locale
+
+      if (queryLocale && instanceData.locales.includes(queryLocale)) {
+        setSelectedLocale({
+          value: queryLocale,
+          label: getLocaleLabel(queryLocale)
+        })
+      } else {
+        const defaultLocale = instanceData.default_locale as Locale
+        // setSearchParamsURL({ locale: defaultLocale })
+        setSelectedLocale({
+          value: defaultLocale,
+          label: getLocaleLabel(defaultLocale)
+        })
+      }
       setIsLocaleQueryEnabled(false)
     }
-  }, [instanceData])
+  }, [instanceData, searchParamsURL, setSearchParamsURL])
 
+  // инициализация категорий из query-параметров
   useEffect(() => {
-    prevLocaleRef.current = searchParams.locale
-  }, [searchParams.locale])
+    if (categoriesData) {
+      const queryCategories = searchParamsURL.get('category')
+      if (queryCategories) {
+        const selectedOptions = queryCategories.split(',').map((id) => ({
+          value: Number(id),
+          label:
+            categoriesData.results.find((category) => category.id === Number(id))?.name[
+              selectedLocale?.value as Locale
+            ] || ''
+        }))
+        setSelectedCategories(selectedOptions)
+      }
+    }
+  }, [categoriesData, searchParamsURL, selectedLocale])
 
-  const handleLocaleChange = (selectedOption: SingleValue<{ value: string; label: string }>) => {
+  const handleLocaleChange = (selectedOption: SingleValue<{ value: Locale; label: string }>) => {
     if (selectedOption) {
-      setSearchParams((prevParams) => ({
-        ...prevParams,
-        locale: selectedOption.value as Locale
-      }))
       setSelectedLocale(selectedOption)
+      setSearchParamsURL({
+        ...Object.fromEntries(searchParamsURL.entries()),
+        locale: selectedOption.value
+      })
     }
   }
 
   const handleCategoryChange = (selectedOptions: any) => {
     const selectedCategories = selectedOptions
-      ? selectedOptions.map((option: any) => option.value)
-      : []
-    setSearchParams((prevParams) => ({
-      ...prevParams,
+      ? selectedOptions.map((option: any) => option.value).join(',')
+      : ''
+    setSelectedCategories(selectedOptions)
+    setSearchParamsURL({
+      ...Object.fromEntries(searchParamsURL.entries()),
       category: selectedCategories
-    }))
+    })
   }
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchParams({ ...searchParams, search: e.target.value })
+    setSearchInput(e.target.value)
+    setSearchParamsURL({ ...Object.fromEntries(searchParamsURL.entries()), search: e.target.value })
   }
 
   const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString(searchParams.locale, {
+    return new Date(dateString).toLocaleString(selectedLocale?.value as Locale, {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -130,6 +164,7 @@ const ArticleSearchView = () => {
             label: category.name[selectedLocale?.value as Locale]
           }))}
           onChange={handleCategoryChange}
+          value={selectedCategories}
           className="w-full"
           placeholder={categoriesDataLoading ? 'Загрузка...' : 'Выберите разделы статей...'}
           isDisabled={queriesLoading}
@@ -139,7 +174,7 @@ const ArticleSearchView = () => {
       <div className="mb-6">
         <input
           type="text"
-          value={searchParams.search}
+          value={searchInput}
           onChange={handleSearchChange}
           placeholder="Введите фразу статьи..."
           className={`w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${queriesLoading ? 'bg-gray-100 text-gray-500' : ''}`}
@@ -219,7 +254,18 @@ const ArticleSearchView = () => {
       </ul>
 
       <pre className="mb-6 bg-gray-100 p-4 rounded-lg shadow-sm">
-        {JSON.stringify(searchParams, null, 2)}
+        {JSON.stringify(
+          {
+            queryParams: Object.fromEntries(searchParamsURL.entries()),
+            localState: {
+              selectedLocale,
+              selectedCategories,
+              searchInput
+            }
+          },
+          null,
+          2
+        )}
       </pre>
     </div>
   )
