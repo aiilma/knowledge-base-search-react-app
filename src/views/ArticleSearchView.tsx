@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown'
 import { useSearchParams } from 'react-router'
 import Select, { SingleValue } from 'react-select'
 import { ClipLoader } from 'react-spinners'
+import { toast } from 'react-toastify'
 
 import { useArticlesSearchQuery } from '../hooks/useArticlesSearchQuery.ts'
 import { useCategoriesQuery } from '../hooks/useCategoriesQuery.ts'
@@ -57,14 +58,27 @@ const ArticleSearchView = () => {
   const [viewedArticles, setViewedArticles] = useLocalStorage<Id[]>('viewedArticles', [])
 
   // queries
-  const { data: instanceData, isLoading: instanceDataLoading } =
+  const { data: instanceData, isLoading: instanceDataLoading, error: instanceError } =
     useInstanceQuery(isLocaleQueryEnabled)
-  const { data: categoriesData, isLoading: categoriesDataLoading } = useCategoriesQuery({}, true)
-  const { data, isLoading, error } = useArticlesSearchQuery({
+  const { data: categoriesData, isLoading: categoriesDataLoading, error: categoriesError } = useCategoriesQuery({}, true)
+  const { data, isLoading, error: articlesError } = useArticlesSearchQuery({
     search: debouncedSearchInput,
     locale: selectedLocale?.value,
     category: selectedCategories.map((category) => category.value)
   })
+
+  // обработка ошибок
+  useEffect(() => {
+    if (instanceError) {
+      toast.error(instanceError.message || 'Ошибка загрузки данных инстанса')
+    }
+    if (categoriesError) {
+      toast.error(categoriesError.message || 'Ошибка загрузки категорий')
+    }
+    if (articlesError) {
+      toast.error(articlesError.message || 'Ошибка загрузки статей')
+    }
+  }, [instanceError, categoriesError, articlesError])
 
   // инициализация локали из query-параметров
   useEffect(() => {
@@ -206,7 +220,7 @@ const ArticleSearchView = () => {
       </div>
 
       {isLoading && <p className="text-blue-500 text-center">{t('loading')}</p>}
-      {error && <p className="text-red-500 text-center">{t('error_loading')}</p>}
+      {articlesError && <p className="text-red-500 text-center">{t('error_loading')}</p>}
       {!isLoading && !data?.results.length && (
         <p className="text-gray-500 text-center">{t('no_data')}</p>
       )}
