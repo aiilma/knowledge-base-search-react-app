@@ -1,0 +1,18 @@
+{
+  "knowledge_base": "База знаний",
+  "select_locale": "Выберите локаль...",
+  "select_categories": "Выберите разделы статей...",
+  "enter_phrase": "Введите фразу статьи...",
+  "loading": "Загрузка...",
+  "error_loading": "Ошибка загрузки данных",
+  "no_data": "Нет данных",
+  "id": "ID",
+  "ext_id": "Внешний ID",
+  "rank": "Ранг",
+  "status": "Статус",
+  "created_at": "Дата создания",
+  "updated_at": "Дата обновления",
+  "published_at": "Дата публикации",
+  "author": "Автор",
+  "highlight": "Аннотация статьи"
+}
