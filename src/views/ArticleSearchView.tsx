@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next'
 import i18n from '../i18n'
 import { ClipLoader } from 'react-spinners'
 import { useLocalStorage } from '../hooks/useLocalStorage'
+import { useDebounce } from '../hooks/useDebounce'
 
 const localeLabels: { [key in Locale]: string } = {
   [Locale.RU]: 'Русский',
@@ -49,6 +50,7 @@ const ArticleSearchView = () => {
     []
   )
   const [searchInput, setSearchInput] = useState(searchParamsURL.get('search') || '')
+  const debouncedSearchInput = useDebounce(searchInput, 755)
   const [isLocaleQueryEnabled, setIsLocaleQueryEnabled] = useState(true)
   const [openArticleId, setOpenArticleId] = useState<Nullable<Article['id']>>(null)
   const [viewedArticles, setViewedArticles] = useLocalStorage<Id[]>('viewedArticles', [])
@@ -58,7 +60,7 @@ const ArticleSearchView = () => {
     useInstanceQuery(isLocaleQueryEnabled)
   const { data: categoriesData, isLoading: categoriesDataLoading } = useCategoriesQuery({}, true)
   const { data, isLoading, error } = useArticlesSearchQuery({
-    search: searchInput,
+    search: debouncedSearchInput,
     locale: selectedLocale?.value,
     category: selectedCategories.map((category) => category.value)
   })
