@@ -14,5 +14,8 @@
   "updated_at": "Updated At",
   "published_at": "Published At",
   "author": "Author",
-  "highlight": "Highlight"
+  "highlight": {
+    "open": "View article highlight",
+    "hide": "Hide article highlight"
+  }
 }

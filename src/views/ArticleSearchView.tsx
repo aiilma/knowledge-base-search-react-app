@@ -11,6 +11,7 @@ import { useSearchParams } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import i18n from '../i18n'
 import { ClipLoader } from 'react-spinners'
+import { useLocalStorage } from '../hooks/useLocalStorage'
 
 const localeLabels: { [key in Locale]: string } = {
   [Locale.RU]: 'Русский',
@@ -50,6 +51,7 @@ const ArticleSearchView = () => {
   const [searchInput, setSearchInput] = useState(searchParamsURL.get('search') || '')
   const [isLocaleQueryEnabled, setIsLocaleQueryEnabled] = useState(true)
   const [openArticleId, setOpenArticleId] = useState<Nullable<Article['id']>>(null)
+  const [viewedArticles, setViewedArticles] = useLocalStorage<Id[]>('viewedArticles', [])
 
   // queries
   const { data: instanceData, isLoading: instanceDataLoading } =
@@ -141,6 +143,9 @@ const ArticleSearchView = () => {
 
   const toggleHighlight = (id: Id) => {
     setOpenArticleId(openArticleId === id ? null : id)
+    if (!viewedArticles.includes(id)) {
+      setViewedArticles([...viewedArticles, id])
+    }
   }
 
   const queriesLoading = instanceDataLoading || categoriesDataLoading || isLoading
@@ -148,7 +153,7 @@ const ArticleSearchView = () => {
   if (isLocaleQueryEnabled) {
     return (
       <div className={`flex items-center justify-center h-screen fade-out`}>
-        <ClipLoader size={150} color={"#123abc"} loading={isLocaleQueryEnabled} />
+        <ClipLoader size={150} color={'#123abc'} loading={isLocaleQueryEnabled} />
       </div>
     )
   }
@@ -204,7 +209,11 @@ const ArticleSearchView = () => {
       )}
       <ul className="space-y-6">
         {data?.results.map((article: Article) => (
-          <li key={article.id} className="p-6 border border-gray-300 rounded-lg shadow-lg bg-white">
+          <li
+            key={article.id}
+            className={`p-6 border border-gray-300 rounded-lg shadow-lg transition-colors duration-300 ${
+              viewedArticles.includes(article.id) ? 'bg-blue-100' : 'bg-white'
+            }`}>
             <div className="flex justify-between mb-2">
               <span className="font-bold text-gray-700">{t('id')}:</span>
               <span className="text-gray-600">{article.id}</span>
@@ -245,12 +254,19 @@ const ArticleSearchView = () => {
             <div className="flex flex-col mt-4">
               <button
                 onClick={() => toggleHighlight(article.id)}
-                className="font-bold text-gray-700 mb-2 text-left focus:outline-none">
-                {t('highlight')} {openArticleId === article.id ? '▲' : '▼'}
+                className={`font-bold mb-2 text-left focus:outline-none px-4 py-2 rounded-lg transition-colors duration-300 cursor-pointer ${
+                  openArticleId === article.id
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-200 text-gray-700'
+                } hover:bg-blue-400 hover:text-white active:bg-blue-600 active:text-white`}>
+                {openArticleId === article.id ? t('highlight.hide') : t('highlight.open')}{' '}
+                {openArticleId === article.id ? '▲' : '▼'}
               </button>
               <div
-                className={`transition-max-height duration-500 ease-in-out overflow-hidden ${openArticleId === article.id ? 'max-h-screen' : 'max-h-0'}`}>
-                <ul className="list-disc list-inside text-gray-600">
+                className={`transition-max-height duration-500 ease-in-out overflow-auto ${
+                  openArticleId === article.id ? 'max-h-screen py-4' : 'max-h-0'
+                } px-2 bg-gray-800 text-white rounded-lg`}>
+                <ul className="list-disc list-inside text-gray-300">
                   {Object.entries(article.highlight).map(([key, value]) => (
                     <li key={key} className="mb-1">
                       <span className="font-bold">{key}:</span>
