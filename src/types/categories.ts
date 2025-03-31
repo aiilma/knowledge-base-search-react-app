@@ -1,4 +1,4 @@
-import { Id, Nullable } from './basic.ts'
+import type { Id, Nullable } from './basic.ts'
 
 export interface CategoriesParams {
   limit?: number // количество элементов на одной странице (по-умолчанию 100)

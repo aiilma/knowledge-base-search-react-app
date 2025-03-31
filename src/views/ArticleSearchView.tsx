@@ -11,8 +11,8 @@ import { useDebounce } from '../hooks/useDebounce'
 import { useInstanceQuery } from '../hooks/useInstanceQuery'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 import i18n from '../i18n'
-import { Article } from '../types/articles'
-import { Id, Nullable } from '../types/basic.ts'
+import type { Article } from '../types/articles'
+import type { Id, Nullable } from '../types/basic.ts'
 import { Locale } from '../types/instance'
 
 const localeLabels: { [key in Locale]: string } = {
