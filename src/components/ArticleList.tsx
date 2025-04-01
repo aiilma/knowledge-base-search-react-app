@@ -1,8 +1,8 @@
-import React, {useCallback, useState} from 'react'
+import React, { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import ReactMarkdown from 'react-markdown'
 
-import {useLocalStorage} from "../hooks/useLocalStorage.ts";
+import { useLocalStorage } from '../hooks/useLocalStorage.ts'
 import type { Article } from '../types/articles'
 import type { Id, Nullable } from '../types/basic.ts'
 
@@ -17,14 +17,10 @@ const renderers = {
 interface ArticleListProps {
   data: Article[] | undefined
   isLoading: boolean
-  articlesError: any
+  articlesError: Nullable<Error>
 }
 
-const ArticleList: React.FC<ArticleListProps> = ({
-  data,
-  isLoading,
-  articlesError,
-}) => {
+const ArticleList: React.FC<ArticleListProps> = ({ data, isLoading, articlesError }) => {
   const { t, i18n } = useTranslation()
   const [viewedArticles, setViewedArticles] = useLocalStorage<Id[]>('viewedArticles', [])
   const [openArticleId, setOpenArticleId] = useState<Nullable<Article['id']>>(null)

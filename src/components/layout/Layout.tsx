@@ -7,7 +7,7 @@ interface LayoutProps {
   isLoading: boolean
   title: string
   children: React.ReactNode
-  debugData?: any
+  debugData?: Record<string, unknown>
 }
 
 const Layout: React.FC<LayoutProps> = ({ title, isLoading, children, debugData }) => {

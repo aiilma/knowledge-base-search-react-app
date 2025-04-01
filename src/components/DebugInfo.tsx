@@ -1,7 +1,7 @@
 import React from 'react'
 
 interface DebugInfoProps {
-  debugData: object
+  debugData: Record<string, unknown>
   className?: string
 }
 

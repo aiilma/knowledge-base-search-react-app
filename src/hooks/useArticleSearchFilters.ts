@@ -139,6 +139,6 @@ export const useArticleSearchFilters = () => {
 
   return {
     filters,
-    filtersQueriesLoading,
+    filtersQueriesLoading
   }
 }

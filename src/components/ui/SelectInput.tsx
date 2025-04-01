@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react'
 import Select, { Props as SelectProps, ActionMeta, SingleValue, MultiValue } from 'react-select'
 
 import { Locale } from '../../types/instance'
@@ -11,7 +11,10 @@ interface OptionType {
 interface SelectInputProps extends Omit<SelectProps<OptionType>, 'onChange' | 'value'> {
   options: OptionType[]
   value: SingleValue<OptionType> | MultiValue<OptionType>
-  onChange: (newValue: SingleValue<OptionType> | MultiValue<OptionType>, actionMeta: ActionMeta<OptionType>) => void
+  onChange: (
+    newValue: SingleValue<OptionType> | MultiValue<OptionType>,
+    actionMeta: ActionMeta<OptionType>
+  ) => void
   placeholder: string
   isMulti?: boolean
   isDisabled?: boolean

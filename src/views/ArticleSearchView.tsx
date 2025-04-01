@@ -5,7 +5,7 @@ import { useSearchParams } from 'react-router'
 import ArticleList from '../components/ArticleList.tsx'
 import Filters from '../components/Filters.tsx'
 import Layout from '../components/layout/Layout.tsx'
-import {useArticleSearchFilters} from "../hooks/useArticleSearchFilters.ts";
+import { useArticleSearchFilters } from '../hooks/useArticleSearchFilters.ts'
 import { useArticlesSearchQuery } from '../hooks/useArticlesSearchQuery.ts'
 import { useDebounce } from '../hooks/useDebounce'
 import { useErrorNotify } from '../hooks/useErrorNotify.ts'
@@ -13,7 +13,7 @@ import { useErrorNotify } from '../hooks/useErrorNotify.ts'
 const ArticleSearchView = () => {
   const { t } = useTranslation()
   const [searchParamsURL, setSearchParamsURL] = useSearchParams()
-  const {filters, filtersQueriesLoading} = useArticleSearchFilters()
+  const { filters, filtersQueriesLoading } = useArticleSearchFilters()
 
   const [searchInput, setSearchInput] = useState(searchParamsURL.get('search') || '')
   const debouncedSearchInput = useDebounce(searchInput, 755)
@@ -26,8 +26,8 @@ const ArticleSearchView = () => {
     })
   }
 
-  const localeFilter = filters.find(filter => filter.name === 'locale')
-  const categoriesFilter = filters.find(filter => filter.name === 'categories')
+  const localeFilter = filters.find((filter) => filter.name === 'locale')
+  const categoriesFilter = filters.find((filter) => filter.name === 'categories')
   const selectedLocale = localeFilter?.value
   const selectedCategories = categoriesFilter?.value || []
 
@@ -45,9 +45,7 @@ const ArticleSearchView = () => {
   const queriesLoading = filtersQueriesLoading || articlesQueryLoading
 
   return (
-    <Layout
-      isLoading={localeFilter?.isLoading || false}
-      title={t('knowledge_base')}>
+    <Layout isLoading={localeFilter?.isLoading || false} title={t('knowledge_base')}>
       <Filters className="mb-6" filters={filters} />
 
       <div className="mb-6">
