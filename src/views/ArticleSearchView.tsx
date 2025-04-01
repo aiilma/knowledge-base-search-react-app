@@ -1,212 +1,54 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import ReactMarkdown from 'react-markdown'
 import { useSearchParams } from 'react-router'
-import Select, { SingleValue } from 'react-select'
-import { ClipLoader } from 'react-spinners'
-import { toast } from 'react-toastify'
 
+import ArticleList from '../components/ArticleList.tsx'
+import Filters from '../components/Filters.tsx'
+import Layout from '../components/layout/Layout.tsx'
+import {useArticleSearchFilters} from "../hooks/useArticleSearchFilters.ts";
 import { useArticlesSearchQuery } from '../hooks/useArticlesSearchQuery.ts'
-import { useCategoriesQuery } from '../hooks/useCategoriesQuery.ts'
 import { useDebounce } from '../hooks/useDebounce'
-import { useInstanceQuery } from '../hooks/useInstanceQuery'
-import { useLocalStorage } from '../hooks/useLocalStorage'
-import i18n from '../i18n'
-import type { Article } from '../types/articles'
-import type { Id, Nullable } from '../types/basic.ts'
-import { Locale } from '../types/instance'
-
-const localeLabels: { [key in Locale]: string } = {
-  [Locale.RU]: 'Русский',
-  [Locale.EN]: 'English'
-}
-
-const getLocaleLabel = (locale: Locale): string => {
-  return localeLabels[locale] || 'Unknown'
-}
-
-const renderers = {
-  img: ({ src }: { alt?: string; src?: string }) => (
-    <a href={src} target="_blank" rel="noopener noreferrer" className="text-blue-500 block">
-      Изображение
-    </a>
-  )
-}
+import { useErrorNotify } from '../hooks/useErrorNotify.ts'
 
 const ArticleSearchView = () => {
   const { t } = useTranslation()
   const [searchParamsURL, setSearchParamsURL] = useSearchParams()
+  const {filters, filtersQueriesLoading} = useArticleSearchFilters()
 
-  // local state
-  const [selectedLocale, setSelectedLocale] = useState<
-    SingleValue<{ value: Locale; label: string }>
-  >(
-    searchParamsURL.get('locale')
-      ? {
-          value: searchParamsURL.get('locale') as Locale,
-          label: getLocaleLabel(searchParamsURL.get('locale') as Locale)
-        }
-      : null
-  )
-  const [selectedCategories, setSelectedCategories] = useState<{ value: number; label: string }[]>(
-    []
-  )
   const [searchInput, setSearchInput] = useState(searchParamsURL.get('search') || '')
   const debouncedSearchInput = useDebounce(searchInput, 755)
-  const [isLocaleQueryEnabled, setIsLocaleQueryEnabled] = useState(true)
-  const [openArticleId, setOpenArticleId] = useState<Nullable<Article['id']>>(null)
-  const [viewedArticles, setViewedArticles] = useLocalStorage<Id[]>('viewedArticles', [])
-
-  // queries
-  const { data: instanceData, isLoading: instanceDataLoading, error: instanceError } =
-    useInstanceQuery(isLocaleQueryEnabled)
-  const { data: categoriesData, isLoading: categoriesDataLoading, error: categoriesError } = useCategoriesQuery({}, true)
-  const { data, isLoading, error: articlesError } = useArticlesSearchQuery({
-    search: debouncedSearchInput,
-    locale: selectedLocale?.value,
-    category: selectedCategories.map((category) => category.value)
-  })
-
-  // обработка ошибок
-  useEffect(() => {
-    if (instanceError) {
-      toast.error(instanceError.message || 'Ошибка загрузки данных инстанса')
-    }
-    if (categoriesError) {
-      toast.error(categoriesError.message || 'Ошибка загрузки категорий')
-    }
-    if (articlesError) {
-      toast.error(articlesError.message || 'Ошибка загрузки статей')
-    }
-  }, [instanceError, categoriesError, articlesError])
-
-  // инициализация локали из query-параметров
-  useEffect(() => {
-    if (instanceData) {
-      const queryLocale = searchParamsURL.get('locale') as Locale
-
-      if (queryLocale && instanceData.locales.includes(queryLocale)) {
-        setSelectedLocale({
-          value: queryLocale,
-          label: getLocaleLabel(queryLocale)
-        })
-        i18n.changeLanguage(queryLocale)
-      } else {
-        const defaultLocale = instanceData.default_locale as Locale
-        // setSearchParamsURL({ locale: defaultLocale })
-        setSelectedLocale({
-          value: defaultLocale,
-          label: getLocaleLabel(defaultLocale)
-        })
-        i18n.changeLanguage(defaultLocale)
-      }
-      setIsLocaleQueryEnabled(false)
-    }
-  }, [instanceData, searchParamsURL, setSearchParamsURL])
-
-  // инициализация категорий из query-параметров
-  useEffect(() => {
-    if (categoriesData) {
-      const queryCategories = searchParamsURL.get('category')
-      if (queryCategories) {
-        const selectedOptions = queryCategories.split(',').map((id) => ({
-          value: Number(id),
-          label:
-            categoriesData.results.find((category) => category.id === Number(id))?.name[
-              selectedLocale?.value as Locale
-            ] || ''
-        }))
-        setSelectedCategories(selectedOptions)
-      }
-    }
-  }, [categoriesData, searchParamsURL, selectedLocale])
-
-  const handleLocaleChange = (selectedOption: SingleValue<{ value: Locale; label: string }>) => {
-    if (selectedOption) {
-      setSelectedLocale(selectedOption)
-      setSearchParamsURL({
-        ...Object.fromEntries(searchParamsURL.entries()),
-        locale: selectedOption.value
-      })
-      i18n.changeLanguage(selectedOption.value)
-    }
-  }
-
-  const handleCategoryChange = (selectedOptions: any) => {
-    const selectedCategories = selectedOptions
-      ? selectedOptions.map((option: any) => option.value).join(',')
-      : ''
-    setSelectedCategories(selectedOptions)
-    setSearchParamsURL({
-      ...Object.fromEntries(searchParamsURL.entries()),
-      category: selectedCategories
-    })
-  }
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInput(e.target.value)
-    setSearchParamsURL({ ...Object.fromEntries(searchParamsURL.entries()), search: e.target.value })
-  }
-
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString(selectedLocale?.value as Locale, {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    setSearchParamsURL({
+      ...Object.fromEntries(searchParamsURL.entries()),
+      search: e.target.value
     })
   }
 
-  const toggleHighlight = (id: Id) => {
-    setOpenArticleId(openArticleId === id ? null : id)
-    if (!viewedArticles.includes(id)) {
-      setViewedArticles([...viewedArticles, id])
-    }
-  }
+  const localeFilter = filters.find(filter => filter.name === 'locale')
+  const categoriesFilter = filters.find(filter => filter.name === 'categories')
+  const selectedLocale = localeFilter?.value
+  const selectedCategories = categoriesFilter?.value || []
 
-  const queriesLoading = instanceDataLoading || categoriesDataLoading || isLoading
+  const {
+    data,
+    isLoading: articlesQueryLoading,
+    error: articlesError
+  } = useArticlesSearchQuery({
+    search: debouncedSearchInput,
+    locale: selectedLocale,
+    category: selectedCategories?.map((category) => category.value)
+  })
 
-  if (isLocaleQueryEnabled) {
-    return (
-      <div className={`flex items-center justify-center h-screen fade-out`}>
-        <ClipLoader size={150} color={'#123abc'} loading={isLocaleQueryEnabled} />
-      </div>
-    )
-  }
+  useErrorNotify([articlesError])
+  const queriesLoading = filtersQueriesLoading || articlesQueryLoading
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-4xl font-bold mb-6 text-gray-800">{t('knowledge_base')}</h1>
-
-      <div className="mb-6">
-        <Select
-          options={instanceData?.locales.map((loc: Locale) => ({
-            value: loc,
-            label: getLocaleLabel(loc)
-          }))}
-          onChange={handleLocaleChange}
-          value={selectedLocale}
-          className="w-full"
-          placeholder={instanceDataLoading ? t('loading') : t('select_locale')}
-          isDisabled={queriesLoading}
-        />
-      </div>
-
-      <div className="mb-6">
-        <Select
-          isMulti
-          options={categoriesData?.results.map((category) => ({
-            value: category.id,
-            label: category.name[selectedLocale?.value as Locale]
-          }))}
-          onChange={handleCategoryChange}
-          value={selectedCategories}
-          className="w-full"
-          placeholder={categoriesDataLoading ? t('loading') : t('select_categories')}
-          isDisabled={queriesLoading}
-        />
-      </div>
+    <Layout
+      isLoading={localeFilter?.isLoading || false}
+      title={t('knowledge_base')}>
+      <Filters className="mb-6" filters={filters} />
 
       <div className="mb-6">
         <input
@@ -219,103 +61,12 @@ const ArticleSearchView = () => {
         />
       </div>
 
-      {isLoading && <p className="text-blue-500 text-center">{t('loading')}</p>}
-      {articlesError && <p className="text-red-500 text-center">{t('error_loading')}</p>}
-      {!isLoading && !data?.results.length && (
-        <p className="text-gray-500 text-center">{t('no_data')}</p>
-      )}
-      <ul className="space-y-6">
-        {data?.results.map((article: Article) => (
-          <li
-            key={article.id}
-            className={`p-6 border border-gray-300 rounded-lg shadow-lg transition-colors duration-300 ${
-              viewedArticles.includes(article.id) ? 'bg-blue-100' : 'bg-white'
-            }`}>
-            <div className="flex justify-between mb-2">
-              <span className="font-bold text-gray-700">{t('id')}:</span>
-              <span className="text-gray-600">{article.id}</span>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span className="font-bold text-gray-700">{t('ext_id')}:</span>
-              <span className="text-gray-600">{article.ext_id}</span>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span className="font-bold text-gray-700">{t('rank')}:</span>
-              <span className="text-gray-600">{article.rank}</span>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span className="font-bold text-gray-700">{t('status')}:</span>
-              <span
-                className={`text-sm ${article.status === 'PUBLISHED' ? 'text-green-500' : 'text-yellow-500'}`}>
-                {article.status}
-              </span>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span className="font-bold text-gray-700">{t('created_at')}:</span>
-              <span className="text-gray-600">{formatDateTime(article.created_at)}</span>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span className="font-bold text-gray-700">{t('updated_at')}:</span>
-              <span className="text-gray-600">{formatDateTime(article.updated_at)}</span>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span className="font-bold text-gray-700">{t('published_at')}:</span>
-              <span className="text-gray-600">
-                {article.published_at ? formatDateTime(article.published_at) : 'N/A'}
-              </span>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span className="font-bold text-gray-700">{t('author')}:</span>
-              <span className="text-gray-600">{article.author}</span>
-            </div>
-            <div className="flex flex-col mt-4">
-              <button
-                onClick={() => toggleHighlight(article.id)}
-                className={`font-bold mb-2 text-left focus:outline-none px-4 py-2 rounded-lg transition-colors duration-300 cursor-pointer ${
-                  openArticleId === article.id
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-200 text-gray-700'
-                } hover:bg-blue-400 hover:text-white active:bg-blue-600 active:text-white`}>
-                {openArticleId === article.id ? t('highlight.hide') : t('highlight.open')}{' '}
-                {openArticleId === article.id ? '▲' : '▼'}
-              </button>
-              <div
-                className={`transition-max-height duration-500 ease-in-out overflow-auto ${
-                  openArticleId === article.id ? 'max-h-screen py-4' : 'max-h-0'
-                } px-2 bg-gray-800 text-white rounded-lg`}>
-                <ul className="list-disc list-inside text-gray-300">
-                  {Object.entries(article.highlight).map(([key, value]) => (
-                    <li key={key} className="mb-1">
-                      <span className="font-bold">{key}:</span>
-                      {key === 'body' ? (
-                        <ReactMarkdown components={renderers}>{value}</ReactMarkdown>
-                      ) : (
-                        value
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </li>
-        ))}
-      </ul>
-
-      <pre className="mt-6 mb-6 bg-gray-100 p-4 rounded-lg shadow-sm">
-        {JSON.stringify(
-          {
-            queryParams: Object.fromEntries(searchParamsURL.entries()),
-            localState: {
-              selectedLocale,
-              selectedCategories,
-              searchInput
-            }
-          },
-          null,
-          2
-        )}
-      </pre>
-    </div>
+      <ArticleList
+        data={data?.results}
+        isLoading={articlesQueryLoading}
+        articlesError={articlesError}
+      />
+    </Layout>
   )
 }
 
