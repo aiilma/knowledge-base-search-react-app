@@ -7,11 +7,28 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "lint:fix": "eslint . --fix",
+    "prettier": "npx prettier src/ --write",
+    "preview": "vite preview",
+    "typecheck": "tsc --build --force && npm run clean",
+    "clean": "npx rimraf dist"
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.0.17",
+    "@tanstack/react-query": "^5.69.3",
+    "@tanstack/react-query-devtools": "^5.70.0",
+    "axios": "^1.8.4",
+    "i18next": "^24.2.3",
+    "i18next-http-backend": "^3.0.2",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-i18next": "^15.4.1",
+    "react-markdown": "^10.1.0",
+    "react-router": "^7.4.1",
+    "react-select": "^5.10.1",
+    "react-spinners": "^0.15.0",
+    "react-toastify": "^11.0.5",
+    "tailwindcss": "^4.0.17"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
@@ -19,9 +36,11 @@
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
     "eslint": "^9.21.0",
+    "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^15.15.0",
+    "prettier": "3.5.3",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.24.1",
     "vite": "^6.2.0"

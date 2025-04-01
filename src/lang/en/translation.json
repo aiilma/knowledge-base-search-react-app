@@ -1,0 +1,21 @@
+{
+  "knowledge_base": "Knowledge Base",
+  "select_locale": "Select Locale...",
+  "select_categories": "Select Categories...",
+  "enter_phrase": "Enter article phrase...",
+  "loading": "Loading...",
+  "error_loading": "Error loading data",
+  "no_data": "No data",
+  "id": "ID",
+  "ext_id": "Ext ID",
+  "rank": "Rank",
+  "status": "Status",
+  "created_at": "Created At",
+  "updated_at": "Updated At",
+  "published_at": "Published At",
+  "author": "Author",
+  "highlight": {
+    "open": "View article highlight",
+    "hide": "Hide article highlight"
+  }
+}

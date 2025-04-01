@@ -1,54 +1,26 @@
-# React + TypeScript + Vite
+## Как запустить
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+1. Клонируем репозиторий в локальную директорию (ssh / https - на ваше усмотрение):
+   ```sh
+   git clone <URL репозитория>
+   ```
+2. Переходим в директорию с проектом и выполняем установку зависимостей:
+   ```sh
+   cd <имя директории>
+   ```
+   ```sh
+   npm install
+   ```
+   Текущую версию Node.js можно поменять, используя nvm. В проекте используется версия **v20.17.0**.
+3. Переходим по внешнему URL-адресу и активируем прокси (Кнопка `Request demo`):
+   [https://cors-anywhere.herokuapp.com](https://cors-anywhere.herokuapp.com)
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+   Это было необходимо в процессе разработки для обхода ограничения CORS, которое возникало при попытке отправить запросы к API с локального домена. Проксик позволяет обойти это ограничение.
+4. Проект можно стартовать в режиме разработки, выполнив:
+   ```sh
+   npm run dev
+   ```
+   Для сборки проекта в прод:
+   ```sh
+   npm run build
+   ```
